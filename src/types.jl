@@ -153,24 +153,24 @@ function pgdata(::Type{PostgresType{:numeric}}, ptr::Ptr{UInt8}, data::Number)
 end
 
 function pgdata(::PGStringTypes, ptr::Ptr{UInt8}, data::AbstractString)
-    ptr = storestring!(ptr, unsafe_string(data))
+    ptr = storestring!(ptr, String(data))
 end
 
 function pgdata(::PostgresType{:date}, ptr::Ptr{UInt8}, data::AbstractString)
-    ptr = storestring!(ptr, unsafe_string(data))
+    ptr = storestring!(ptr, String(data))
     ptr = Dates.DateFormat(ptr)
 end
 
 function pgdata(::PostgresType{:timestamp}, ptr::Ptr{UInt8}, data::AbstractString)
-    ptr = storestring!(ptr, unsafe_string(data))
+    ptr = storestring!(ptr, String(data))
 end
 
 function pgdata(::PostgresType{:timestamptz}, ptr::Ptr{UInt8}, data::AbstractString)
-    ptr = storestring!(ptr, unsafe_string(data))
+    ptr = storestring!(ptr, String(data))
 end
 
 function pgdata(::Type{PostgresType{:bytea}}, ptr::Ptr{UInt8}, data::Vector{UInt8})
-    ptr = storestring!(ptr, unsafe_string("\\x", bytes2hex(data)))
+    ptr = storestring!(ptr, String("\\x", bytes2hex(data)))
 end
 
 function pgdata(::Type{PostgresType{:unknown}}, ptr::Ptr{UInt8}, data)
@@ -178,11 +178,11 @@ function pgdata(::Type{PostgresType{:unknown}}, ptr::Ptr{UInt8}, data)
 end
 
 function pgdata{T<:AbstractString}(::Type{PostgresType{:json}}, ptr::Ptr{UInt8}, data::Dict{T,Any})
-    ptr = storestring!(ptr, unsafe_string(JSON.json(data)))
+    ptr = storestring!(ptr, String(JSON.json(data)))
 end
 
 function pgdata{T<:AbstractString}(::Type{PostgresType{:jsonb}}, ptr::Ptr{UInt8}, data::Dict{T,Any})
-    ptr = storestring!(ptr, unsafe_string(JSON.json(data)))
+    ptr = storestring!(ptr, String(JSON.json(data)))
 end
 
 function pgdata(::Type{PostgresType{:_bool}}, ptr::Ptr{UInt8}, data::Vector{Bool})
