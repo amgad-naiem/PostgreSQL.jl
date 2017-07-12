@@ -121,3 +121,4 @@ const _IO_FILE = Void
 const FILE = Void
 const PQconninfoOption = Void
 const PGcancel = Void
+const PGnotify = Void
