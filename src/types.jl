@@ -18,6 +18,7 @@ function newpgtype(pgtypename, oid, jltypes)
     Base.convert(::Type{PostgresType}, ::Type{OID{oid}}) = PostgresType{pgtypename}
 
     for t in jltypes
+        pgtypename in [:jsonb, :_text] && continue
         Base.convert(::Type{PostgresType}, ::Type{t}) = PostgresType{pgtypename}
     end
 end
