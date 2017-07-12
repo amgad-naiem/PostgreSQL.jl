@@ -54,7 +54,7 @@ newpgtype(:_varchar, 1015, (Vector{String}, Vector{String}))
 newpgtype(:_text, 1009, (Vector{String}, Vector{String}))
 
 
-typealias PGStringTypes Union{Type{PostgresType{:bpchar}},
+const PGStringTypes = Union{Type{PostgresType{:bpchar}},
                               Type{PostgresType{:varchar}},
                               Type{PostgresType{:text}},
                               Type{PostgresType{:date}}}
