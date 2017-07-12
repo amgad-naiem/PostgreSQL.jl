@@ -123,3 +123,5 @@ const PQconninfoOption = Void
 const PGcancel = Void
 const PGnotify = Void
 const PQArgBlock = Void
+const PGresAttDesc = Void
+const PQprintOpt = Void
