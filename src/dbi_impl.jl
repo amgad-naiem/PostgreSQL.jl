@@ -90,14 +90,14 @@ end
 
 escapeliteral(db::PostgresDatabaseHandle, value) = value
 
-function escapeliteral(db::PostgresDatabaseHandle, value::String)
+function escapeliteral(db::PostgresDatabaseHandle, value::AbstractString)
     strptr = PQescapeLiteral(db.ptr, value, sizeof(value))
     str = unsafe_string(strptr)
     PQfreemem(strptr)
     return str
 end
 
-function escapeidentifier(db::PostgresDatabaseHandle, value::String)
+function escapeidentifier(db::PostgresDatabaseHandle, value::AbstractString)
     strptr = PQescapeIdentifier(db.ptr, value, sizeof(value))
     str = unsafe_string(strptr)
     PQfreemem(strptr)
