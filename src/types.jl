@@ -1,6 +1,6 @@
 import DataArrays: NAtype
 import JSON
-import Compat: Libc, unsafe_convert, parse, @compat
+import Compat: Libc, unsafe_convert, parse, @compat, String, unsafe_string
 
 abstract AbstractPostgresType
 type PostgresType{Name} <: AbstractPostgresType end
@@ -52,7 +52,7 @@ newpgtype(:_int2, 1005, (Vector{Int16},))
 newpgtype(:_float8, 1022, (Vector{Float64},))
 newpgtype(:_float4, 1021, (Vector{Float32},))
 newpgtype(:_varchar, 1015, (Vector{String},))
-newpgtype(:_text, 1009, (Vector{String}, Vector{String}))
+newpgtype(:_text, 1009, (Vector{String},))
 
 
 const PGStringTypes = Union{Type{PostgresType{:bpchar}},
@@ -170,7 +170,7 @@ function pgdata(::PostgresType{:timestamptz}, ptr::Ptr{UInt8}, data::AbstractStr
 end
 
 function pgdata(::Type{PostgresType{:bytea}}, ptr::Ptr{UInt8}, data::Vector{UInt8})
-    ptr = storestring!(ptr, String("\\x", bytes2hex(data)))
+    ptr = storestring!(ptr, String(string("\\x", bytes2hex(data))))
 end
 
 function pgdata(::Type{PostgresType{:unknown}}, ptr::Ptr{UInt8}, data)
@@ -266,3 +266,17 @@ function Base.copy(rh::PostgresResultHandle)
         PG_COPYRES_NOTICEHOOKS | PG_COPYRES_EVENTS), copy(rh.types), rh.ntuples, rh.nfields)
 end
 
+if VERSION < v"0.5-dev+4194"
+    import Compat
+
+    pgtype{T<:Compat.ASCIIString}(::Type{T}) = convert(PostgresType, String)
+    pgtype{T<:Vector{Compat.ASCIIString}}(::Type{T}) = convert(PostgresType, Vector{String})
+
+    function pgdata(::Type{PostgresType{:_varchar}}, ptr::Ptr{UInt8}, data::Vector{Compat.ASCIIString})
+        ptr = storestring!(ptr, string("{", join(data, ','), "}"))
+    end
+
+    function pgdata(::Type{PostgresType{:_text}}, ptr::Ptr{UInt8}, data::Vector{Compat.ASCIIString})
+        ptr = storestring!(ptr, string("{", join(data, ','), "}"))
+    end
+end

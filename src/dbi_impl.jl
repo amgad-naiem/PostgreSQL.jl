@@ -1,10 +1,10 @@
-import Compat: Libc, @compat
+import Compat: Libc, @static, is_windows
 
 function Base.connect(::Type{Postgres},
-                      host::AbstractString="",
-                      user::AbstractString="",
-                      passwd::AbstractString="",
-                      db::AbstractString="",
+                      host::AbstractString,
+                      user::AbstractString,
+                      passwd::AbstractString,
+                      db::AbstractString,
                       port::AbstractString="")
     conn = PQsetdbLogin(host, port, C_NULL, C_NULL, db, user, passwd)
     status = PQstatus(conn)
@@ -133,7 +133,7 @@ hashsql(sql::AbstractString) = String(string("__", hash(sql), "__"))
 
 function getparamtypes(result::Ptr{PGresult})
     nparams = PQnparams(result)
-    return @compat [pgtype(OID{Int(PQparamtype(result, i-1))}) for i = 1:nparams]
+    return [pgtype(OID{Int(PQparamtype(result, i-1))}) for i = 1:nparams]
 end
 
 LIBC = @static is_windows() ? "msvcrt.dll" : :libc
@@ -279,9 +279,9 @@ function unsafe_fetchrow(result::PostgresResultHandle, rownum::Integer)
 end
 
 function unsafe_fetchcol_dataarray(result::PostgresResultHandle, colnum::Integer)
-    return @data([PQgetisnull(result.ptr, i, colnum) == 1 ? NA :
+    return Any[PQgetisnull(result.ptr, i, colnum) == 1 ? NA :
             jldata(result.types[colnum+1], PQgetvalue(result.ptr, i, colnum))
-            for i = 0:(PQntuples(result.ptr)-1)])
+            for i = 0:(PQntuples(result.ptr)-1)]
 end
 
 function DBI.fetchall(result::PostgresResultHandle)
