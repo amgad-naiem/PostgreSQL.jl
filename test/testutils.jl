@@ -12,7 +12,7 @@ function testdberror(dbobj, expected)
         @test errcode(dbobj) == expected
     catch
         println(errstring(dbobj))
-        println(bytestring(PostgreSQL.PQresStatus(expected)))
+        println(unsafe_string(PostgreSQL.PQresStatus(expected)))
         rethrow()
     end
 end
