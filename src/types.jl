@@ -2,10 +2,10 @@ import DataArrays: NAtype
 import JSON
 import Compat: Libc, unsafe_convert, parse, @compat, String, unsafe_string
 
-abstract AbstractPostgresType
+@compat abstract type AbstractPostgresType end
 type PostgresType{Name} <: AbstractPostgresType end
 
-abstract AbstractOID
+@compat abstract type AbstractOID end
 type OID{N} <: AbstractOID end
 
 oid{T<:AbstractPostgresType}(t::Type{T}) = convert(OID, t)
@@ -218,7 +218,7 @@ function pgdata(::Type{PostgresType{:_text}}, ptr::Ptr{UInt8}, data::Vector{Stri
 end
 
 # dbi
-abstract Postgres <: DBI.DatabaseSystem
+@compat abstract type Postgres<:DBI.DatabaseSystem end
 
 type PostgresDatabaseHandle <: DBI.DatabaseHandle
     ptr::Ptr{PGconn}
