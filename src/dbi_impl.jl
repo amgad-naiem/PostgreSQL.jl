@@ -114,7 +114,8 @@ function checkcopyreturnval(db::PostgresDatabaseHandle, returnval::Int32)
     end
 end
 
-function copy_from(db::PostgresDatabaseHandle, table::AbstractString, filename::AbstractString, format::AbstractString)
+function copy_from(db::PostgresDatabaseHandle, table::AbstractString,
+                   filename::AbstractString, format::AbstractString)
     f = open(filename)
     try
         Base.run(db, string("COPY ", escapeidentifier(db, table), " FROM STDIN ", format))
