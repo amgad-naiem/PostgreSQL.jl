@@ -1,3 +1,5 @@
+import Compat: unsafe_string
+
 function test_connection()
   println("Using libpq")
     libpq = PostgreSQL.libpq_interface
