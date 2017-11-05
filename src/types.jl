@@ -269,14 +269,14 @@ end
 if VERSION < v"0.5-dev+4194"
     import Compat
 
-    pgtype{T<:Compat.ASCIIString}(::Type{T}) = convert(PostgresType, String)
-    pgtype{T<:Vector{Compat.ASCIIString}}(::Type{T}) = convert(PostgresType, Vector{String})
+    pgtype{T<:String}(::Type{T}) = convert(PostgresType, String)
+    pgtype{T<:Vector{String}}(::Type{T}) = convert(PostgresType, Vector{String})
 
-    function pgdata(::Type{PostgresType{:_varchar}}, ptr::Ptr{UInt8}, data::Vector{Compat.ASCIIString})
+    function pgdata(::Type{PostgresType{:_varchar}}, ptr::Ptr{UInt8}, data::Vector{String})
         ptr = storestring!(ptr, string("{", join(data, ','), "}"))
     end
 
-    function pgdata(::Type{PostgresType{:_text}}, ptr::Ptr{UInt8}, data::Vector{Compat.ASCIIString})
+    function pgdata(::Type{PostgresType{:_text}}, ptr::Ptr{UInt8}, data::Vector{String})
         ptr = storestring!(ptr, string("{", join(data, ','), "}"))
     end
 end
