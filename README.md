@@ -46,7 +46,6 @@ end
 
 * [DBI.jl](https://github.com/JuliaDB/DBI.jl)
 * [DataFrames.jl](https://github.com/JuliaStats/DataFrames.jl) >= v0.8.0
-* [DataArrays.jl](https://github.com/JuliaStats/DataArrays.jl) >= v0.3.4 for Julia 0.4, v0.3.8 for Julia 0.5
 * libpq shared library (comes with a standard PostgreSQL client installation)
 * Julia 0.4
 

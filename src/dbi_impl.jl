@@ -1,6 +1,7 @@
-import Compat: Libc, @static, is_windows
+using Sockets
+import Compat: Libc, @static
 
-function Base.connect(::Type{Postgres},
+function Sockets.connect(::Type{Postgres},
                       host::AbstractString,
                       user::AbstractString,
                       passwd::AbstractString,
@@ -20,18 +21,18 @@ function Base.connect(::Type{Postgres},
     return conn
 end
 
-function Base.connect(::Type{Postgres},
+function Sockets.connect(::Type{Postgres},
                       host::AbstractString,
                       user::AbstractString,
                       passwd::AbstractString,
                       db::AbstractString,
                       port::Integer)
-    Base.connect(Postgres, host, user, passwd, db, string(port))
+    Sockets.connect(Postgres, host, user, passwd, db, string(port))
 end
 
 # Note that for some reason, `do conn` notation
 # doesn't work using this version of the function
-function Base.connect(::Type{Postgres};
+function Sockets.connect(::Type{Postgres};
                       dsn::AbstractString="")
     conn = PQconnectdb(dsn)
     status = PQstatus(conn)
@@ -137,7 +138,7 @@ function getparamtypes(result::Ptr{PGresult})
     return [pgtype(OID{Int(PQparamtype(result, i-1))}) for i = 1:nparams]
 end
 
-LIBC = @static is_windows() ? "msvcrt.dll" : :libc
+LIBC = @static Sys.iswindows() ? "msvcrt.dll" : :libc
 strlen(ptr::Ptr{UInt8}) = ccall((:strlen, LIBC), Csize_t, (Ptr{UInt8},), ptr)
 
 function getparams!(ptrs::Vector{Ptr{UInt8}}, params, types, sizes, lengths::Vector{Int32}, nulls)
@@ -216,8 +217,8 @@ function DBI.execute(stmt::PostgresStatementHandle, params::Vector)
     return stmt.result = PostgresResultHandle(result)
 end
 
-function executemany{T<:AbstractVector}(stmt::PostgresStatementHandle,
-        params::Union{DataFrame,AbstractVector{T}})
+function executemany(stmt::PostgresStatementHandle,
+        params::Union{DataFrame,AbstractVector{T}}) where T <: AbstractVector
     nparams = isa(params, DataFrame) ? ncol(params) : length(params[1])
 
     if nparams > 0 && isempty(stmt.paramtypes)

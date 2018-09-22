@@ -1,3 +1,4 @@
+using Sockets
 import Compat: unsafe_string
 
 function test_connection()

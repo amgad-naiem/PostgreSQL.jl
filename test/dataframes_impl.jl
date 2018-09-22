@@ -1,5 +1,4 @@
 import DataFrames
-import DataArrays: isna
 
 function test_dataframes()
     df = connect(Postgres, "localhost", "postgres", "", "julia_test") do conn
@@ -30,8 +29,8 @@ function test_dataframes()
 
     @test names(df) == names(df2)
     for col in names(df)
-        @test all(isna(df[col]) == isna(df2[col]))
-        @test all(i -> (isna(df[col][i]) && isna(df2[col][i])) || (df[col][i] == df2[col][i]),
+        @test all(ismissing(df[col]) == ismissing(df2[col]))
+        @test all(i -> (ismissing(df[col][i]) && ismissing(df2[col][i])) || (df[col][i] == df2[col][i]),
             1:length(df[col]))
     end
 end

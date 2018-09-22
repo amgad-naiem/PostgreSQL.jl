@@ -1,6 +1,6 @@
 using DBI
 using PostgreSQL
-using Base.Test
+using Test
 
 include("testutils.jl")
 

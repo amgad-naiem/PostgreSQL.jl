@@ -1,5 +1,5 @@
 using BinDeps
-import Compat: @static, is_apple
+import Compat: @static
 
 @BinDeps.setup
 
@@ -19,7 +19,7 @@ provides(Yum, "libpq5", libpq)
 provides(Yum, "postgresql-libs", libpq)
 provides(Pacman, "postgresql-libs", libpq)
 
-@static if is_apple()
+@static if Sys.isapple()
     using Homebrew
     provides(Homebrew.HB, "postgresql", libpq, os=:Darwin)
 end

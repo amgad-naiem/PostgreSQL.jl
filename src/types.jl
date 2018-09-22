@@ -1,25 +1,25 @@
-import DataArrays: NAtype
 import JSON
-import Compat: Libc, unsafe_convert, parse, @compat, String, unsafe_string
+import Compat: Libc, parse, @compat, String, unsafe_string
 
 @compat abstract type AbstractPostgresType end
-type PostgresType{Name} <: AbstractPostgresType end
+mutable struct PostgresType{Name} <: AbstractPostgresType end
 
 @compat abstract type AbstractOID end
-type OID{N} <: AbstractOID end
+mutable struct OID{N} <: AbstractOID end
 
-oid{T<:AbstractPostgresType}(t::Type{T}) = convert(OID, t)
+oid(t::Type{T}) where T <: AbstractPostgresType = convert(OID, t)
 pgtype(t::Type) = convert(PostgresType, t)
 
-Base.convert{T}(::Type{Oid}, ::Type{OID{T}}) = convert(Oid, T)
+Base.convert(::Type{Oid}, ::Type{OID{T}}) where T = convert(Oid, T)
 
 function newpgtype(pgtypename, oid, jltypes)
-    Base.convert(::Type{OID}, ::Type{PostgresType{pgtypename}}) = OID{oid}
-    Base.convert(::Type{PostgresType}, ::Type{OID{oid}}) = PostgresType{pgtypename}
+    pgtypename = string(pgtypename)
+    @eval Base.convert(::Type{OID}, ::Type{PostgresType{Symbol($pgtypename)}}) = OID{$oid}
+    @eval Base.convert(::Type{PostgresType}, ::Type{OID{$oid}}) = PostgresType{Symbol($pgtypename)}
 
     for t in jltypes
-        pgtypename in [:jsonb, :_text] && continue
-        Base.convert(::Type{PostgresType}, ::Type{t}) = PostgresType{pgtypename}
+        pgtypename in ["jsonb", "_text"] && continue
+        @eval Base.convert(::Type{PostgresType}, ::Type{$t}) = PostgresType{Symbol($pgtypename)}
     end
 end
 
@@ -40,7 +40,7 @@ newpgtype(:numeric, 1700, (BigInt,BigFloat))
 newpgtype(:date, 1082, ())
 newpgtype(:timestamp, 1114, ())
 newpgtype(:timestamptz, 1184, ())
-newpgtype(:unknown, 705, (Union,NAtype))
+newpgtype(:unknown, 705, (Union, Missing))
 newpgtype(:json, 114, (Dict{AbstractString,Any},))
 newpgtype(:jsonb, 3802, (Dict{AbstractString,Any},))
 
@@ -177,11 +177,11 @@ function pgdata(::Type{PostgresType{:unknown}}, ptr::Ptr{UInt8}, data)
     ptr = storestring!(ptr, string(data))
 end
 
-function pgdata{T<:AbstractString}(::Type{PostgresType{:json}}, ptr::Ptr{UInt8}, data::Dict{T,Any})
+function pgdata(::Type{PostgresType{:json}}, ptr::Ptr{UInt8}, data::Dict{T,Any}) where T <: AbstractString
     ptr = storestring!(ptr, String(JSON.json(data)))
 end
 
-function pgdata{T<:AbstractString}(::Type{PostgresType{:jsonb}}, ptr::Ptr{UInt8}, data::Dict{T,Any})
+function pgdata(::Type{PostgresType{:jsonb}}, ptr::Ptr{UInt8}, data::Dict{T,Any}) where T <: AbstractString
     ptr = storestring!(ptr, String(JSON.json(data)))
 end
 
@@ -220,7 +220,7 @@ end
 # dbi
 @compat abstract type Postgres<:DBI.DatabaseSystem end
 
-type PostgresDatabaseHandle <: DBI.DatabaseHandle
+mutable struct PostgresDatabaseHandle <: DBI.DatabaseHandle
     ptr::Ptr{PGconn}
     status::ConnStatusType
     closed::Bool
@@ -230,7 +230,7 @@ type PostgresDatabaseHandle <: DBI.DatabaseHandle
     end
 end
 
-type PostgresResultHandle
+mutable struct PostgresResultHandle
     ptr::Ptr{PGresult}
     types::Vector{DataType}
     nrows::Integer
@@ -248,7 +248,7 @@ function PostgresResultHandle(result::Ptr{PGresult})
     return PostgresResultHandle(result, types, PQntuples(result), PQnfields(result))
 end
 
-type PostgresStatementHandle <: DBI.StatementHandle
+mutable struct PostgresStatementHandle <: DBI.StatementHandle
     db::PostgresDatabaseHandle
     stmt::AbstractString
     executed::Int
@@ -269,8 +269,8 @@ end
 if VERSION < v"0.5-dev+4194"
     import Compat
 
-    pgtype{T<:String}(::Type{T}) = convert(PostgresType, String)
-    pgtype{T<:Vector{String}}(::Type{T}) = convert(PostgresType, Vector{String})
+    pgtype(::Type{T}) where T <: String = convert(PostgresType, String)
+    pgtype(::Type{T}) where T <: Vector{String} = convert(PostgresType, Vector{String})
 
     function pgdata(::Type{PostgresType{:_varchar}}, ptr::Ptr{UInt8}, data::Vector{String})
         ptr = storestring!(ptr, string("{", join(data, ','), "}"))
