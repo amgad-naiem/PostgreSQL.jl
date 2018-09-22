@@ -17,7 +17,7 @@ function Sockets.connect(::Type{Postgres},
     end
 
     conn = PostgresDatabaseHandle(conn, status)
-    finalizer(conn, DBI.disconnect)
+    finalizer(DBI.disconnect, conn)
     return conn
 end
 
@@ -42,7 +42,7 @@ function Sockets.connect(::Type{Postgres};
         error(errmsg)
     end
     conn = PostgresDatabaseHandle(conn, status)
-    finalizer(conn, DBI.disconnect)
+    finalizer(DBI.disconnect, conn)
     return conn
 end
 
