@@ -144,7 +144,7 @@ strlen(ptr::Ptr{UInt8}) = ccall((:strlen, LIBC), Csize_t, (Ptr{UInt8},), ptr)
 function getparams!(ptrs::Vector{Ptr{UInt8}}, params, types, sizes, lengths::Vector{Int32}, nulls)
     fill!(nulls, false)
     for i = 1:length(ptrs)
-        if params[i] === nothing || params[i] === NA || params[i] === Union{}
+        if params[i] === nothing || params[i] === missing || params[i] === Union{}
             nulls[i] = true
         else
             ptrs[i] = pgdata(types[i], ptrs[i], params[i])
@@ -281,7 +281,7 @@ function unsafe_fetchrow(result::PostgresResultHandle, rownum::Integer)
 end
 
 function unsafe_fetchcol_dataarray(result::PostgresResultHandle, colnum::Integer)
-    return Any[PQgetisnull(result.ptr, i, colnum) == 1 ? NA :
+    return Any[PQgetisnull(result.ptr, i, colnum) == 1 ? missing :
             jldata(result.types[colnum+1], PQgetvalue(result.ptr, i, colnum))
             for i = 0:(PQntuples(result.ptr)-1)]
 end
